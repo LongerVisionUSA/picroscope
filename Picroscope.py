@@ -7,12 +7,13 @@ import wx
 import datetime
 
 # variables
-updateFrameLoop = True
-camera = picamera.PiCamera()
+imagePath = "/home/pi/Pictures"
 imagePreviewWidth = 640
 imagePreviewHeight = 480
 imagePictureWidth = 2592
 imagePictureHeight = 1944
+updateFrameLoop = True
+camera = picamera.PiCamera()
 margin = 20
 labelWidth = 120
 sliderWidth = 180
@@ -190,7 +191,7 @@ def takePictureEvent(_event):
     # get time
     imageName = datetime.datetime.now().strftime("%y_%m_%d_%H_%M_%S.jpg")
     # take picture
-    camera.capture(imageName)
+    camera.capture(imagePath + '/' + imageName)
     time.sleep(0.2)
     # restart preview
     camera.resolution = (imagePreviewWidth, imagePreviewHeight)
@@ -209,8 +210,6 @@ buttonTakePicture.Bind(wx.EVT_BUTTON, takePictureEvent)
 def updateFrame(_imageDisplayer):
     global updateFrameLoop
     global camera
-    # Camera warm-up time
-    time.sleep(1)
     stream = io.BytesIO()
     while updateFrameLoop:
         camera.capture(stream, 'jpeg', True)
@@ -224,6 +223,13 @@ def updateImage(_stream, _imageDisplayer):
     _imageDisplayer.SetBitmap(wx.BitmapFromImage(imageWx))
     _stream.seek(0)
     _stream.truncate()
+
+# close event to stop preview
+def closeEvent(_event):
+    global updateFrameLoop
+    updateFrameLoop = False
+    frame.Destroy()
+frame.Bind(wx.EVT_CLOSE, closeEvent)
 
 # Start threads
 threading.Thread(target=app.MainLoop).start()
