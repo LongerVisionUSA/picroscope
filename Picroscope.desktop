@@ -1,0 +1,7 @@
+[Desktop Entry]
+Comment=
+Terminal=false
+Name=Picroscope
+Exec=python /home/pi/Share/Picroscope/Picroscope.py
+Type=Application
+Icon=gnome-panel-launcher
