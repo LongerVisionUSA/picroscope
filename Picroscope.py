@@ -5,9 +5,11 @@ import threading
 from PIL import Image, ImageTk
 import wx
 import datetime
+import subprocess
 
 # variables
 imagePath = "/home/pi/Pictures"
+lastPicture = ""
 imagePreviewWidth = 640
 imagePreviewHeight = 480
 imagePictureWidth = 2592
@@ -216,12 +218,15 @@ buttonSaturationReset.SetSize((buttonWidth, rowHeight))
 buttonSaturationReset.Bind(wx.EVT_BUTTON, buttonSaturationResetEvent)
 
 
+# button bottom width
+buttonBottomWidth = (labelWidth + sliderWidth + buttonWidth) / 3
 
 # button to take a picture
 def takePictureEvent(_event):
     global updateFrameLoop
     global camera
     global imageDiplayer
+    global lastPicture
     try:
         # stop preview
         awdGainsBuffer = camera.awb_gains
@@ -237,6 +242,7 @@ def takePictureEvent(_event):
         imageName = datetime.datetime.now().strftime("%y_%m_%d_%H_%M_%S.jpg")
         # take picture
         camera.capture(imagePath + '/' + imageName)
+        lastPicture = imagePath + '/' + imageName
         time.sleep(0.1)
         # restart preview
         camera.resolution = (imagePreviewWidth, imagePreviewHeight)
@@ -248,10 +254,34 @@ def takePictureEvent(_event):
     except:
         print "error while taking the picture"
 buttonTakePicture = wx.Button(panelControl)
-buttonTakePicture.SetLabel("Take a Picture")
+buttonTakePicture.SetLabel("Take Picture")
 buttonTakePicture.SetPosition((0, imagePreviewHeight - rowHeight))
-buttonTakePicture.SetSize((labelWidth + sliderWidth + buttonWidth + 2 * margin, rowHeight))
+buttonTakePicture.SetSize((buttonBottomWidth, rowHeight))
 buttonTakePicture.Bind(wx.EVT_BUTTON, takePictureEvent)
+
+
+
+# button to open last picture
+def openLastPictureEvent(_event):
+    global lastPicture
+    if lastPicture != "":
+        subprocess.call(["xdg-open", lastPicture])
+buttonOpenLastPicture = wx.Button(panelControl)
+buttonOpenLastPicture.SetLabel("Last Picture")
+buttonOpenLastPicture.SetPosition((buttonBottomWidth + margin, imagePreviewHeight - rowHeight))
+buttonOpenLastPicture.SetSize((buttonBottomWidth, rowHeight))
+buttonOpenLastPicture.Bind(wx.EVT_BUTTON, openLastPictureEvent)
+
+
+
+# button to open picture folder
+def openPictureFolderEvent(_event):
+    subprocess.call(["xdg-open", imagePath])
+buttonOpenPictureFolder = wx.Button(panelControl)
+buttonOpenPictureFolder.SetLabel("Picture Folder")
+buttonOpenPictureFolder.SetPosition((2 * buttonBottomWidth + 2 * margin, imagePreviewHeight - rowHeight))
+buttonOpenPictureFolder.SetSize((buttonBottomWidth, rowHeight))
+buttonOpenPictureFolder.Bind(wx.EVT_BUTTON, openPictureFolderEvent)
 
 
 
